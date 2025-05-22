@@ -25,19 +25,25 @@ user.callback_query.middleware(UserMiddleware())
 @user.callback_query(F.data == 'check_subscribe')
 @user.callback_query(F.data == 'back_to_main')
 @user.message(CommandStart())
-async def cmd_start(event: Message | CallbackQuery, user_info: UserORM, state: FSMContext):
+async def cmd_start(message: Message, user_info: UserORM, state: FSMContext):
     await state.clear()
     text = await user_db.get_start_text()
     text = text.replace("\\n", "\n")
-    if isinstance(event, Message):
-        await event.answer(text,
+    await message.answer(text,
                            disable_web_page_preview=True,
                            reply_markup=user_kb.main_kb)
-    elif isinstance(event, CallbackQuery):
-        await event.answer('')
-        await event.message.edit_text(text,
-                           disable_web_page_preview=True,
-                           reply_markup=user_kb.main_kb)
+
+
+@user.callback_query(F.data == 'check_subscribe')
+@user.callback_query(F.data == 'back_to_main')
+async def callback_cmd_start(callback: CallbackQuery, user_info: UserORM, state: FSMContext):
+    await state.clear()
+    text = await user_db.get_start_text()
+    text = text.replace("\\n", "\n")
+    await callback.answer('')
+    await callback.message.edit_text(text,
+                       disable_web_page_preview=True,
+                       reply_markup=user_kb.main_kb)
 
 
 @user.callback_query(F.data == 'back_to_profile')
