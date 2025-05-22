@@ -43,3 +43,20 @@ async def get_start_text():
     async with async_session() as session:
         text = await session.scalar(select(TextInBotORM.text).where(TextInBotORM.type == 'start_text'))
         return text
+
+
+async def add_referral(referrer_id, referral_id):
+    async with async_session() as session:
+        if referrer_id == referral_id:
+            return
+        user = await session.scalar(select(UserORM).where(UserORM.tg_id == referral_id))
+        referrer = await session.scalar(select(UserORM).where(UserORM.tg_id == referrer_id))
+        referral_in_db = await session.scalar(select(ReferralORM).where(
+            ReferralORM.referrer_id == referrer.id,
+            ReferralORM.referred_id == user.id
+        ))
+        if referral_in_db:
+            return
+        else:
+            session.add(ReferralORM(referrer_id=referrer.id, referred_id=user.id))
+            await session.commit()
