@@ -27,6 +27,11 @@ async def handle_channel_post(message: Message):
     await message.answer("Всё отлично!")
 
 
+@admin.message(Command("get_chat_id"))
+async def get_chat_id(message: Message):
+    await message.answer(f"Chat ID: {message.chat.id}")
+
+
 @admin.callback_query(AdminProtect(), F.data == 'back_to_admin_panel')
 @admin.message(AdminProtect(), Command("admin_panel"))
 async def admin_panel(event: Message | CallbackQuery, state: FSMContext):
