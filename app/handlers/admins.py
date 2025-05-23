@@ -21,15 +21,15 @@ class AdminProtect(Filter):
         return message.from_user.id in self.admins
 
 
-@admin.channel_post(F.text == "Как дела")
-async def handle_channel_post(message: Message):
-    print("Канал:", message.chat.id)
-    await message.answer(f"Всё отлично!, {message.chat.id}")
-
-
-@admin.message(Command("get_chat_id"))
-async def get_chat_id(message: Message):
-    await message.answer(f"Chat ID: {message.chat.id}")
+# @admin.channel_post(F.text == "Как дела")
+# async def handle_channel_post(message: Message):
+#     print("Канал:", message.chat.id)
+#     await message.answer(f"Всё отлично!, {message.chat.id}")
+#
+#
+# @admin.message(Command("get_chat_id"))
+# async def get_chat_id(message: Message):
+#     await message.answer(f"Chat ID: {message.chat.id}")
 
 
 @admin.callback_query(AdminProtect(), F.data == 'back_to_admin_panel')
