@@ -24,7 +24,7 @@ class AdminProtect(Filter):
 @admin.channel_post(F.text == "Как дела")
 async def handle_channel_post(message: Message):
     print("Канал:", message.chat.id)
-    await message.answer("Всё отлично!")
+    await message.answer(f"Всё отлично!, {message.chat.id}")
 
 
 @admin.message(Command("get_chat_id"))
