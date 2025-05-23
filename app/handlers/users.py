@@ -7,7 +7,7 @@ from app.models.users import UserORM
 
 import app.requests.users as user_db
 import app.keyboards.users as user_kb
-from app.middlewares.users import UserMiddleware
+from app.middlewares.users import UserMiddleware, UserSimpleMiddleware
 import app.states as st
 import re
 import datetime
@@ -15,6 +15,8 @@ import datetime
 
 user_start_router = Router()
 user = Router()
+user_start_router.message.middleware(UserSimpleMiddleware())
+user_start_router.callback_query.middleware(UserSimpleMiddleware())
 user.message.middleware(UserMiddleware())
 user.callback_query.middleware(UserMiddleware())
 

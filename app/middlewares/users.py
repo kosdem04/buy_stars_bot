@@ -8,6 +8,19 @@ from app.keyboards.users import subscribe_to_channel_kb
 
 
 
+class UserSimpleMiddleware(BaseMiddleware):
+    async def __call__(
+        self,
+        handler: Callable[[Union[Message, CallbackQuery], Dict[str, Any]], Awaitable[Any]],
+        event: Union[Message, CallbackQuery],
+        data: Dict[str, Any]
+    ) -> Any:
+        user = await set_user(event.from_user.id, event.from_user.username)
+        data['user_info'] = user
+        return await handler(event, data)
+
+
+
 class UserMiddleware(BaseMiddleware):
     async def __call__(
         self,
