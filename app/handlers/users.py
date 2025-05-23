@@ -26,7 +26,7 @@ user.callback_query.middleware(UserMiddleware())
 
 
 @user_start_router.message(CommandStart())
-async def cmd_start(message: Message, user_info: UserORM, state: FSMContext):
+async def cmd_start(message: Message, state: FSMContext):
     await state.clear()
     args = message.text.split(maxsplit=1)[1] if len(message.text.split()) > 1 else None
     referrer_id = args if args else None
