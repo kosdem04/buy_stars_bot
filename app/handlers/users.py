@@ -22,9 +22,9 @@ user.callback_query.middleware(UserMiddleware())
 
 # user.message.middleware(BaseMiddleware())
 
-# @user.message(Command("get_chat_id"))
-# async def get_chat_id(message: Message):
-#     await message.answer(f"Chat ID: {message.chat.id}")
+@user.message(Command("get_chat_id"))
+async def get_chat_id(message: Message):
+    await message.answer(f"Chat ID: {message.chat.id}")
 
 
 @user_start_router.message(CommandStart())
