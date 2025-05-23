@@ -12,6 +12,8 @@ import app.states as st
 import re
 import datetime
 
+
+user_start_router = Router()
 user = Router()
 user.message.middleware(UserMiddleware())
 user.callback_query.middleware(UserMiddleware())
@@ -23,7 +25,7 @@ user.callback_query.middleware(UserMiddleware())
 #     await message.answer(f"Chat ID: {message.chat.id}")
 
 
-@user.message(CommandStart())
+@user_start_router.message(CommandStart())
 async def cmd_start(message: Message, user_info: UserORM, state: FSMContext):
     await state.clear()
     args = message.text.split(maxsplit=1)[1] if len(message.text.split()) > 1 else None

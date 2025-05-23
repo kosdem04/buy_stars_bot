@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
-from app.handlers.users import user
+from app.handlers.users import user_start_router, user
 from app.handlers.admins import admin
 from app.handlers.stars import star
 
@@ -17,7 +17,7 @@ async def main():
               default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     
     dp = Dispatcher()
-    dp.include_routers(user, star, admin)
+    dp.include_routers(user_start_router, user, star, admin)
     dp.startup.register(startup)
     dp.shutdown.register(shutdown)
     
