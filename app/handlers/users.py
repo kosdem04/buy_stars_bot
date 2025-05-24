@@ -55,7 +55,7 @@ async def callback_cmd_start(callback: CallbackQuery, user_info: UserORM, state:
 async def profile(callback: CallbackQuery, user_info: UserORM):
     await callback.answer('')
     number_of_referrals = await user_db.number_of_referrals(user_info.id)
-    await callback.message.edit_text(f'Username {callback.from_user.username}:\n\n'
+    await callback.message.edit_text(f'Username @{callback.from_user.username}:\n\n'
                                      f'Баланс: {user_info.balance} ⭐️\n'
                                      f'Куплено звёзд: {user_info.total_stars} ⭐️\n'
                                      f'Количество рефералов: {number_of_referrals} 👥',
