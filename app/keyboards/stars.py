@@ -80,5 +80,5 @@ async def buy_options_kb():
     )
     kb.add(InlineKeyboardButton(text='Как это работает?', callback_data='how_it_works'))
     kb.add(InlineKeyboardButton(text='Назад', callback_data='back_to_main'))
-    kb.adjust(1)
+    kb.adjust(2)
     return kb.as_markup()

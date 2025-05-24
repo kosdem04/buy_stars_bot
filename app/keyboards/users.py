@@ -5,8 +5,8 @@ from config import CHANNEL_URL
 
 
 main_kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Купить звёзды ⭐️', callback_data='buy_stars')],
-    [InlineKeyboardButton(text='Профиль 👤', callback_data='profile')]])
+    [InlineKeyboardButton(text='Купить звёзды ⭐️', callback_data='buy_stars'),
+     InlineKeyboardButton(text='Профиль 👤', callback_data='profile')]])
 
 
 profile_kb = InlineKeyboardMarkup(inline_keyboard=[
