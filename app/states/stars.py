@@ -7,6 +7,7 @@ class WithdrawalStarState(StatesGroup):
 
 class BuyStarState(StatesGroup):
     enter_amount = State()
+    smth = State()
 
 
 

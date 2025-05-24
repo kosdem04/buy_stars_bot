@@ -9,14 +9,14 @@ back_to_buy_stars_kb = InlineKeyboardMarkup(inline_keyboard=[
 
 
 back_to_buy_stars_select_user_kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Назад', callback_data='back_to_buy_stars_select_user')]])
+    [InlineKeyboardButton(text='Назад', callback_data='back_to_select_user_stars')]])
 
 
 withdrawal_stars_cancel_kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Отмена', callback_data='back_to_withdrawal_stars')]])
 
 buy_stars_cancel_kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Отмена', callback_data='back_to_buy_stars')]])
+    [InlineKeyboardButton(text='Отмена', callback_data='back_to_select_user_stars')]])
 
 
 sure_withdrawal_kb = InlineKeyboardMarkup(inline_keyboard=[
@@ -33,11 +33,11 @@ back_to_profile_kb = InlineKeyboardMarkup(inline_keyboard=[
 
 
 
-async def buy_stars_select_user_kb(amount, username):
+async def buy_stars_select_user_kb(username):
     kb = InlineKeyboardBuilder()
+    kb.add(InlineKeyboardButton(text=f'Отправить себе', callback_data=f'send-stars-to-user@{username}'))
     kb.add(InlineKeyboardButton(text='Отправить другому пользователю', callback_data='send_stars_to_another_user'))
-    kb.add(InlineKeyboardButton(text=f'Оплатить {amount}₽', callback_data=f'send-stars-to-user@{username}@{amount}'))
-    kb.add(InlineKeyboardButton(text='Назад', callback_data='back_to_buy_stars'))
+    kb.add(InlineKeyboardButton(text='Назад', callback_data='back_to_main'))
     kb.adjust(1)
     return kb.as_markup()
 
@@ -48,7 +48,7 @@ async def buy_stars_select_method_kb():
     for method in methods:
         kb.add(InlineKeyboardButton(text=f"{method.name}",
                                     callback_data=f"buy-stars-select-method_{method.id}"))
-    kb.add(InlineKeyboardButton(text='Отмена', callback_data='back_to_buy_stars'))
+    kb.add(InlineKeyboardButton(text='Отмена', callback_data='back_to_select_user_stars'))
     kb.adjust(1)
     return kb.as_markup()
 
@@ -79,6 +79,6 @@ async def buy_options_kb():
         InlineKeyboardButton(text='TG Канал', url='https://t.me/stardark666')
     )
     kb.add(InlineKeyboardButton(text='Как это работает?', callback_data='how_it_works'))
-    kb.add(InlineKeyboardButton(text='Назад', callback_data='back_to_main'))
+    kb.add(InlineKeyboardButton(text='Назад', callback_data='back_to_select_user_stars'))
     kb.adjust(2)
     return kb.as_markup()

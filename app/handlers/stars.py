@@ -103,7 +103,7 @@ async def withdrawal_yes(callback: CallbackQuery, user_info: UserORM, bot: Bot, 
 """
 ПОКУПКА ЗВЁЗД
 """
-@star.callback_query(F.data == 'back_to_buy_stars')
+@star.callback_query(F.data == 'back_to_select_user_stars')
 @star.callback_query(F.data == 'buy_stars')
 async def buy_stars(callback: CallbackQuery, state: FSMContext):
     await callback.answer('')
@@ -112,19 +112,72 @@ async def buy_stars(callback: CallbackQuery, state: FSMContext):
     text = text.replace("\\n", "\n")
     await callback.message.edit_text(text,
                                      disable_web_page_preview=True,
+                                     reply_markup=await star_kb.buy_stars_select_user_kb(callback.from_user.username))
+    # await callback.message.edit_text(text,
+    #                                  disable_web_page_preview=True,
+    #                                  reply_markup=await star_kb.buy_options_kb())
+
+
+@star.callback_query(F.data.startswith('send-stars-to-user@'))
+async def buy_stars_select_option(callback: CallbackQuery, user_info: UserORM, state: FSMContext,):
+    username = callback.data.split('@')[1]
+    await state.update_data(username=username)
+    await callback.message.edit_text('Выберите количество звёзд',
                                      reply_markup=await star_kb.buy_options_kb())
+    # amount_money = callback.data.split('@')[2]
+    # await callback.message.edit_text(f'Выберите способ оплаты для {amount_money} рублей? (для @{username})',
+    #                                      reply_markup=await star_kb.buy_stars_select_method_kb())
+
+
+@star.callback_query(F.data == 'send_stars_to_another_user')
+async def send_stars_to_another_user(callback: CallbackQuery, state: FSMContext,):
+    await callback.answer('')
+    msg = await callback.message.edit_text('Отправьте имя пользователя (username) в чат',
+                                     reply_markup=star_kb.back_to_buy_stars_select_user_kb)
+    await state.set_state(stars_states.BuyStarSelectUserState.enter_username)
+    await state.update_data(bot_msg_id=msg.message_id)
+
+
+@star.message(stars_states.BuyStarSelectUserState.enter_username)
+async def buy_stars_another_user_select_option(message: Message, bot: Bot, state: FSMContext):
+    data = await state.get_data()
+    await state.set_state(stars_states.BuyStarSelectUserState.smth)
+    bot_msg_id = data.get("bot_msg_id")
+    # amount_money = data.get("amount_money")
+    # number_of_stars = data.get("buy_amount_stars")
+    if bot_msg_id:
+        try:
+            await message.bot.delete_message(chat_id=message.chat.id, message_id=bot_msg_id)
+        except:
+            pass
+    username = message.text
+    if username.startswith('@'):
+        username = username[1:]
+    await state.update_data(username=username)
+    await message.answer('Выберите количество звёзд',
+                                     reply_markup=await star_kb.buy_options_kb())
+
+    # await message.answer(f'Вы собираетесь купить {number_of_stars} Telegram Stars 🌟 на аккаунт '
+    #                      f'@{username} за {amount_money}₽.',
+    #                      reply_markup=await star_kb.buy_stars_select_user_kb(amount_money, username))
 
 
 @star.callback_query(F.data.startswith('buy-option_'))
-async def buy_stars_select_user(callback: CallbackQuery, state: FSMContext):
+async def buy_stars_select_method(callback: CallbackQuery, state: FSMContext):
     number_of_stars = int(callback.data.split('_')[1])
     await state.update_data(buy_number_of_stars=number_of_stars)
     star_cost = await star_db.get_star_cost()
     amount = number_of_stars * star_cost.amount
     await state.update_data(amount_money=amount)
-    await callback.message.edit_text(f'Вы собираетесь купить {number_of_stars} Telegram Stars 🌟 на аккаунт '
-                                     f'@{callback.from_user.username} за {amount}₽.',
-                                     reply_markup=await star_kb.buy_stars_select_user_kb(amount, callback.from_user.username))
+    data = await state.get_data()
+    username = data.get("username")
+    await callback.message.edit_text( f'Вы собираетесь купить {number_of_stars} Telegram Stars 🌟 на аккаунт '
+                                     f'@{username} за {amount}₽.\n\n'
+                                      f'Выберите способ оплаты',
+                                         reply_markup=await star_kb.buy_stars_select_method_kb())
+    # await callback.message.edit_text(f'Вы собираетесь купить {number_of_stars} Telegram Stars 🌟 на аккаунт '
+    #                                  f'@{callback.from_user.username} за {amount}₽.',
+    #                                  reply_markup=await star_kb.buy_stars_select_user_kb(amount, callback.from_user.username))
 
 
 @star.callback_query(F.data == 'enter_buy_option')
@@ -137,7 +190,7 @@ async def enter_buy_option(callback: CallbackQuery, state: FSMContext,):
 
 
 @star.message(stars_states.BuyStarState.enter_amount)
-async def enter_buy_option_select_user(message: Message, user_info: UserORM, state: FSMContext):
+async def enter_buy_option_select_method(message: Message, user_info: UserORM, state: FSMContext):
     data = await state.get_data()
     bot_msg_id = data.get("bot_msg_id")
     if bot_msg_id:
@@ -155,53 +208,16 @@ async def enter_buy_option_select_user(message: Message, user_info: UserORM, sta
                              )
         await state.update_data(bot_msg_id=msg.message_id)
         return
-    await state.clear()
-    await state.update_data(buy_amount_stars=number_of_stars)
+    await state.update_data(buy_number_of_stars=number_of_stars)
     star_cost = await star_db.get_star_cost()
     amount = number_of_stars * star_cost.amount
     await state.update_data(amount_money=amount)
+    await state.set_state(stars_states.BuyStarState.smth)
+    username = data.get("username")
     await message.answer(f'Вы собираетесь купить {number_of_stars} Telegram Stars 🌟 на аккаунт '
-                                     f'@{message.from_user.username} за {amount}₽.',
-                                     reply_markup=await star_kb.buy_stars_select_user_kb(amount, message.from_user.username))
-
-
-@star.callback_query(F.data.startswith('send-stars-to-user@'))
-async def buy_stars_select_method(callback: CallbackQuery, user_info: UserORM, state: FSMContext,):
-    username = callback.data.split('@')[1]
-    amount_money = callback.data.split('@')[2]
-    await state.update_data(username=username)
-    await callback.message.edit_text(f'Выберите способ оплаты для {amount_money} рублей? (для @{username})',
-                                         reply_markup=await star_kb.buy_stars_select_method_kb())
-
-
-@star.callback_query(F.data == 'send_stars_to_another_user')
-async def send_stars_to_another_user(callback: CallbackQuery, state: FSMContext,):
-    await callback.answer('')
-    msg = await callback.message.edit_text('Отправьте имя пользователя (username) в чат',
-                                     reply_markup=star_kb.buy_stars_cancel_kb)
-    await state.set_state(stars_states.BuyStarSelectUserState.enter_username)
-    await state.update_data(bot_msg_id=msg.message_id)
-
-
-@star.message(stars_states.BuyStarSelectUserState.enter_username)
-async def buy_stars_another_user_select_method(message: Message, bot: Bot, state: FSMContext):
-    data = await state.get_data()
-    await state.set_state(stars_states.BuyStarSelectUserState.smth)
-    bot_msg_id = data.get("bot_msg_id")
-    amount_money = data.get("amount_money")
-    number_of_stars = data.get("buy_amount_stars")
-    if bot_msg_id:
-        try:
-            await message.bot.delete_message(chat_id=message.chat.id, message_id=bot_msg_id)
-        except:
-            pass
-    username = message.text
-    if username.startswith('@'):
-        username = username[1:]
-    await message.answer(f'Вы собираетесь купить {number_of_stars} Telegram Stars 🌟 на аккаунт '
-                         f'@{username} за {amount_money}₽.',
-                         reply_markup=await star_kb.buy_stars_select_user_kb(amount_money, username))
-
+                                     f'@{username} за {amount}₽.\n\n'
+                                     f'Выберите способ оплаты',
+                                     reply_markup=await star_kb.buy_stars_select_method_kb())
 
 
 @star.callback_query(F.data == 'how_it_works')
