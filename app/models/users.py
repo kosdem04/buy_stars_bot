@@ -63,17 +63,12 @@ class FeedbackMarkORM(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     mark: Mapped[int]
 
-    feedbacks: Mapped[List["FeedbackORM"]] = relationship(back_populates="mark",
-                                                               cascade='all, delete')
-
-
 
 class FeedbackORM(Base):
     __tablename__ = 'feedbacks'
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
-    mark_id: Mapped[int] = mapped_column(ForeignKey('feedback_marks.id', ondelete='CASCADE'))
     text: Mapped[str] = mapped_column(String(250))
     status: Mapped[bool]
 
@@ -81,4 +76,3 @@ class FeedbackORM(Base):
         "UserORM",
         back_populates="feedbacks"
     )
-    mark: Mapped["FeedbackMarkORM"] = relationship(back_populates="feedbacks")
