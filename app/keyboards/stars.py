@@ -5,7 +5,7 @@ import app.requests.stars as star_db
 
 
 back_to_buy_stars_kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Назад', callback_data='back_to_buy_stars')]])
+    [InlineKeyboardButton(text='Назад', callback_data='back_to_main')]])
 
 
 back_to_buy_stars_select_user_kb = InlineKeyboardMarkup(inline_keyboard=[
@@ -72,12 +72,6 @@ async def buy_options_kb():
         kb.add(InlineKeyboardButton(text=f"🌟 {option.amount} Звёзд - {option.amount * star_cost.amount}₽",
                                     callback_data=f"buy-option_{option.amount}"))
     kb.add(InlineKeyboardButton(text='🌟 Ввести свой вариант', callback_data='enter_buy_option'))
-    kb.row(
-        InlineKeyboardButton(text='Отзывы', url='https://t.me/stardark666'),
-        InlineKeyboardButton(text='Помощь', url='https://t.me/akmglqq'),
-        InlineKeyboardButton(text='TG Канал', url='https://t.me/stardark666')
-    )
-    kb.add(InlineKeyboardButton(text='Как это работает?', callback_data='how_it_works'))
     kb.add(InlineKeyboardButton(text='Назад', callback_data='back_to_select_user_stars'))
     kb.adjust(2)
     return kb.as_markup()
