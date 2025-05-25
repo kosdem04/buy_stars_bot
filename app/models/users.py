@@ -48,12 +48,3 @@ class ReferralORM(Base):
 
     referrer: Mapped["UserORM"] = relationship(back_populates="referrals_referrer", foreign_keys=[referrer_id])
     referred: Mapped["UserORM"] = relationship(back_populates="referral_referred", foreign_keys=[referred_id])
-
-
-class FeedbackORM(Base):
-    __tablename__ = 'feedbacks'
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    text: Mapped[str] = mapped_column(String(250))
-    status: Mapped[bool]
-
