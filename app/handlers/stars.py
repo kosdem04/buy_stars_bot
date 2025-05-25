@@ -213,3 +213,55 @@ async def how_it_works(callback: CallbackQuery):
     await callback.message.edit_text(text,
                                      disable_web_page_preview=True,
                                      reply_markup=star_kb.back_to_buy_stars_kb)
+
+
+
+
+"""
+CRYPTOBOT
+"""
+@star.callback_query(F.data.startswith('buy-stars-select-method_'))
+async def topup_cryptobot(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    amount_money = data.get("amount_money")
+    token = '311947:AANxGq3KZFTVUxpDAXdL9iTfAGVenqeEoRq'
+    invoice_data={
+    "amount": amount_money,
+    "currency_type": "fiat",
+    "fiat": "RUB",
+    }
+    print('После invoice_data')
+    headers = {
+        "Crypto-Pay-API-Token": token,
+        "Content-Type": "application/json"
+    }
+    print('Перед url')
+    # URL для отправки запроса
+    url = "https://pay.crypt.bot/api/createInvoice"  # Укажите нужный URL
+    # Отправляем POST-запрос с данными и заголовками
+    print('Перед отправлением запроса')
+    # async with httpx.AsyncClient() as client:
+    #     try:
+    #         print('Отправляем запрос')
+    #         response = await client.post(url, headers=headers, json=invoice_data)
+    #         print('После отправки запроса', response.json())
+    #         response.raise_for_status()  # Проверка на наличие ошибок HTTP
+    #         await db.add_topup(response.json()['result']['invoice_id'],
+    #                            payment.user_id,
+    #                            payment.method_id,
+    #                            payment.amount)
+    #         print('Перед возвращением результата')
+    #         # Формируем сообщение
+    #         message = ("<b>‼️ Оплатить ‼️</b>")
+    #         # Отправляем сообщение в Telegram
+    #         # Ждём генерации клавиатуры
+    #         keyboard = await keyboard_for_topup(response.json()['result']['bot_invoice_url'])
+    #         await bot.send_message(chat_id=payment.user_id, text=message,
+    #                                reply_markup=keyboard)
+    #         return {"payment_link": response.json()['result']['bot_invoice_url']}
+    #     except httpx.HTTPStatusError as e:
+    #         print('Ошибка1', str(e))
+    #         raise HTTPException(status_code=e.response.status_code, detail=str(e))
+    #     except Exception as e:
+    #         print('Ошибка2', str(e))
+    #         raise HTTPException(status_code=500, detail="Произошла ошибка при обработке запроса")

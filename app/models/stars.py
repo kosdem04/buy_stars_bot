@@ -35,6 +35,7 @@ class BuyStarMethodORM(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(64))
+    eng_name: Mapped[str] = mapped_column(String(64), nullable=True)
 
     buy_stars: Mapped[List["BuyStarsORM"]] = relationship(back_populates="method", cascade='all, delete')
 
