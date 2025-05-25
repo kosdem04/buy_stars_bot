@@ -36,7 +36,6 @@ back_to_profile_kb = InlineKeyboardMarkup(inline_keyboard=[
 async def buy_stars_select_user_kb(username):
     kb = InlineKeyboardBuilder()
     kb.add(InlineKeyboardButton(text=f'Отправить себе', callback_data=f'send-stars-to-user@{username}'))
-    kb.add(InlineKeyboardButton(text='Отправить другому пользователю', callback_data='send_stars_to_another_user'))
     kb.add(InlineKeyboardButton(text='Назад', callback_data='back_to_main'))
     kb.adjust(1)
     return kb.as_markup()

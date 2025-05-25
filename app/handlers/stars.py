@@ -108,34 +108,19 @@ async def withdrawal_yes(callback: CallbackQuery, user_info: UserORM, bot: Bot, 
 async def buy_stars(callback: CallbackQuery, state: FSMContext):
     await callback.answer('')
     await state.clear()
-    text = await star_db.get_buy_star_text()
-    text = text.replace("\\n", "\n")
-    await callback.message.edit_text(text,
-                                     disable_web_page_preview=True,
+    msg = await callback.message.edit_text("📱 Отправьте @username получателя",
                                      reply_markup=await star_kb.buy_stars_select_user_kb(callback.from_user.username))
-    # await callback.message.edit_text(text,
-    #                                  disable_web_page_preview=True,
-    #                                  reply_markup=await star_kb.buy_options_kb())
+    await state.set_state(stars_states.BuyStarSelectUserState.enter_username)
+    await state.update_data(bot_msg_id=msg.message_id)
 
 
 @star.callback_query(F.data.startswith('send-stars-to-user@'))
-async def buy_stars_select_option(callback: CallbackQuery, user_info: UserORM, state: FSMContext,):
+async def buy_stars_select_option(callback: CallbackQuery, user_info: UserORM, state: FSMContext):
+    await state.clear()
     username = callback.data.split('@')[1]
     await state.update_data(username=username)
     await callback.message.edit_text('Выберите количество звёзд',
                                      reply_markup=await star_kb.buy_options_kb())
-    # amount_money = callback.data.split('@')[2]
-    # await callback.message.edit_text(f'Выберите способ оплаты для {amount_money} рублей? (для @{username})',
-    #                                      reply_markup=await star_kb.buy_stars_select_method_kb())
-
-
-@star.callback_query(F.data == 'send_stars_to_another_user')
-async def send_stars_to_another_user(callback: CallbackQuery, state: FSMContext,):
-    await callback.answer('')
-    msg = await callback.message.edit_text('Отправьте имя пользователя (username) в чат',
-                                     reply_markup=star_kb.back_to_buy_stars_select_user_kb)
-    await state.set_state(stars_states.BuyStarSelectUserState.enter_username)
-    await state.update_data(bot_msg_id=msg.message_id)
 
 
 @star.message(stars_states.BuyStarSelectUserState.enter_username)
