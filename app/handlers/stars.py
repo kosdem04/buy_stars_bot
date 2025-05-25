@@ -11,7 +11,8 @@ from app.middlewares.users import UserMiddleware
 import app.states.stars as stars_states
 from decimal import Decimal
 import app.requests.stars as star_db
-from config import CHAT_FOR_WITHDRAWAL_ID
+from config import CHAT_FOR_WITHDRAWAL_ID, CRYPTOBOT_TOKEN
+import aiohttp
 
 
 star = Router()
@@ -205,26 +206,17 @@ async def enter_buy_option_select_method(message: Message, user_info: UserORM, s
                                      reply_markup=await star_kb.buy_stars_select_method_kb())
 
 
-@star.callback_query(F.data == 'how_it_works')
-async def how_it_works(callback: CallbackQuery):
-    await callback.answer('')
-    text = await star_db.get_how_it_works_text()
-    text = text.replace("\\n", "\n")
-    await callback.message.edit_text(text,
-                                     disable_web_page_preview=True,
-                                     reply_markup=star_kb.back_to_buy_stars_kb)
-
-
 
 
 """
 CRYPTOBOT
 """
-@star.callback_query(F.data.startswith('buy-stars-select-method_'))
-async def topup_cryptobot(callback: CallbackQuery, state: FSMContext):
+@star.callback_query(F.data == 'buy_stars_select_method_crypto_bot')
+async def buy_stars_select_method_crypto_bot(callback: CallbackQuery, state: FSMContext):
+    await callback.answer('')
     data = await state.get_data()
     amount_money = data.get("amount_money")
-    token = '311947:AANxGq3KZFTVUxpDAXdL9iTfAGVenqeEoRq'
+    token = CRYPTOBOT_TOKEN
     invoice_data={
     "amount": amount_money,
     "currency_type": "fiat",
@@ -237,9 +229,17 @@ async def topup_cryptobot(callback: CallbackQuery, state: FSMContext):
     }
     print('Перед url')
     # URL для отправки запроса
-    url = "https://pay.crypt.bot/api/createInvoice"  # Укажите нужный URL
+    # url = "https://pay.crypt.bot/api/createInvoice"  # Укажите нужный URL
+    url = "https://pay.crypt.bot/api/getMe"  # Укажите нужный URL
     # Отправляем POST-запрос с данными и заголовками
     print('Перед отправлением запроса')
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.post(url=url) as response:
+        # async with session.post(url=url, json=invoice_data) as response:
+            print("@@@@", response)
+            print("!!!", await response.json())
+            if response.status != 200:
+                print(f"Failed to track referral: {response.status}")
     # async with httpx.AsyncClient() as client:
     #     try:
     #         print('Отправляем запрос')

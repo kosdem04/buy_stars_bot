@@ -46,7 +46,7 @@ async def buy_stars_select_method_kb():
     kb = InlineKeyboardBuilder()
     for method in methods:
         kb.add(InlineKeyboardButton(text=f"{method.name}",
-                                    callback_data=f"buy-stars-select-method_{method.id}"))
+                                    callback_data=f"buy_stars_select_method_{method.eng_name}"))
     kb.add(InlineKeyboardButton(text='Отмена', callback_data='back_to_select_user_stars'))
     kb.adjust(1)
     return kb.as_markup()
