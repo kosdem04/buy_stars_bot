@@ -24,12 +24,6 @@ class UserORM(Base):
     referral_referred: Mapped[List["ReferralORM"]] = relationship(back_populates="referred",
                                                                 cascade='all, delete',
                                                                 foreign_keys="[ReferralORM.referred_id]")
-    feedbacks: Mapped[List["FeedbackORM"]] = relationship(
-        "FeedbackORM",
-        back_populates="user",
-        cascade='all, delete'
-    )
-
     buy_stars: Mapped[List["BuyStarsORM"]] = relationship(
         "BuyStarsORM",
         back_populates="user",
@@ -56,23 +50,10 @@ class ReferralORM(Base):
     referred: Mapped["UserORM"] = relationship(back_populates="referral_referred", foreign_keys=[referred_id])
 
 
-
-class FeedbackMarkORM(Base):
-    __tablename__ = 'feedback_marks'
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    mark: Mapped[int]
-
-
 class FeedbackORM(Base):
     __tablename__ = 'feedbacks'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
     text: Mapped[str] = mapped_column(String(250))
     status: Mapped[bool]
 
-    user: Mapped["UserORM"] = relationship(
-        "UserORM",
-        back_populates="feedbacks"
-    )
