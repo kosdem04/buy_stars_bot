@@ -129,8 +129,6 @@ async def buy_stars_another_user_select_option(message: Message, bot: Bot, state
     data = await state.get_data()
     await state.set_state(stars_states.BuyStarSelectUserState.smth)
     bot_msg_id = data.get("bot_msg_id")
-    # amount_money = data.get("amount_money")
-    # number_of_stars = data.get("buy_amount_stars")
     if bot_msg_id:
         try:
             await message.bot.delete_message(chat_id=message.chat.id, message_id=bot_msg_id)
@@ -142,10 +140,6 @@ async def buy_stars_another_user_select_option(message: Message, bot: Bot, state
     await state.update_data(username=username)
     await message.answer('Выберите количество звёзд',
                                      reply_markup=await star_kb.buy_options_kb())
-
-    # await message.answer(f'Вы собираетесь купить {number_of_stars} Telegram Stars 🌟 на аккаунт '
-    #                      f'@{username} за {amount_money}₽.',
-    #                      reply_markup=await star_kb.buy_stars_select_user_kb(amount_money, username))
 
 
 @star.callback_query(F.data.startswith('buy-option_'))
@@ -161,9 +155,6 @@ async def buy_stars_select_method(callback: CallbackQuery, state: FSMContext):
                                      f'@{username} за {amount}₽.\n\n'
                                       f'Выберите способ оплаты',
                                          reply_markup=await star_kb.buy_stars_select_method_kb())
-    # await callback.message.edit_text(f'Вы собираетесь купить {number_of_stars} Telegram Stars 🌟 на аккаунт '
-    #                                  f'@{callback.from_user.username} за {amount}₽.',
-    #                                  reply_markup=await star_kb.buy_stars_select_user_kb(amount, callback.from_user.username))
 
 
 @star.callback_query(F.data == 'enter_buy_option')
@@ -212,9 +203,11 @@ async def enter_buy_option_select_method(message: Message, user_info: UserORM, s
 CRYPTOBOT
 """
 @star.callback_query(F.data == 'buy_stars_select_method_crypto_bot')
-async def buy_stars_select_method_crypto_bot(callback: CallbackQuery, state: FSMContext):
+async def buy_stars_select_method_crypto_bot(callback: CallbackQuery, user_info: UserORM, state: FSMContext):
     await callback.answer('')
     data = await state.get_data()
+    method = await star_db.get_cryptobot_method()
+    number_of_stars = data.get("buy_number_of_stars")
     amount_money = data.get("amount_money")
     token = CRYPTOBOT_TOKEN
     invoice_data={
@@ -222,46 +215,61 @@ async def buy_stars_select_method_crypto_bot(callback: CallbackQuery, state: FSM
     "currency_type": "fiat",
     "fiat": "RUB",
     }
-    print('После invoice_data')
     headers = {
         "Crypto-Pay-API-Token": token,
         "Content-Type": "application/json"
     }
-    print('Перед url')
     # URL для отправки запроса
-    # url = "https://pay.crypt.bot/api/createInvoice"  # Укажите нужный URL
-    url = "https://pay.crypt.bot/api/getMe"  # Укажите нужный URL
+    url = "https://pay.crypt.bot/api/createInvoice"  # Укажите нужный URL
     # Отправляем POST-запрос с данными и заголовками
-    print('Перед отправлением запроса')
     async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.post(url=url) as response:
-        # async with session.post(url=url, json=invoice_data) as response:
-            print("@@@@", response)
-            print("!!!", await response.json())
+        async with session.post(url=url, json=invoice_data) as response:
+            data = await response.json()
+            order_id = data['result']['invoice_id']
+            pay_url = data['result']['bot_invoice_url']
+            await star_db.add_buy_star(order_id,
+                                       user_info.id,
+                                       method.id,
+                                       number_of_stars)
+            await callback.message.edit_text('Оплатите по ссылке ниже',
+                                             reply_markup=await star_kb.buy_stars_crypto_bot_kb(pay_url, order_id))
             if response.status != 200:
                 print(f"Failed to track referral: {response.status}")
-    # async with httpx.AsyncClient() as client:
-    #     try:
-    #         print('Отправляем запрос')
-    #         response = await client.post(url, headers=headers, json=invoice_data)
-    #         print('После отправки запроса', response.json())
-    #         response.raise_for_status()  # Проверка на наличие ошибок HTTP
-    #         await db.add_topup(response.json()['result']['invoice_id'],
-    #                            payment.user_id,
-    #                            payment.method_id,
-    #                            payment.amount)
-    #         print('Перед возвращением результата')
-    #         # Формируем сообщение
-    #         message = ("<b>‼️ Оплатить ‼️</b>")
-    #         # Отправляем сообщение в Telegram
-    #         # Ждём генерации клавиатуры
-    #         keyboard = await keyboard_for_topup(response.json()['result']['bot_invoice_url'])
-    #         await bot.send_message(chat_id=payment.user_id, text=message,
-    #                                reply_markup=keyboard)
-    #         return {"payment_link": response.json()['result']['bot_invoice_url']}
-    #     except httpx.HTTPStatusError as e:
-    #         print('Ошибка1', str(e))
-    #         raise HTTPException(status_code=e.response.status_code, detail=str(e))
-    #     except Exception as e:
-    #         print('Ошибка2', str(e))
-    #         raise HTTPException(status_code=500, detail="Произошла ошибка при обработке запроса")
+                await callback.message.edit_text('Произошла ошибка',
+                                                 reply_markup=star_kb.back_to_buy_stars_kb)
+
+
+
+@star.callback_query(F.data.startswith('check_buy_stars_crypto_bot#'))
+async def check_buy_stars_crypto_bot(callback: CallbackQuery, state: FSMContext):
+    await callback.answer('')
+    order_id = str(callback.data.split('#')[1])
+    headers = {
+        "Crypto-Pay-API-Token": CRYPTOBOT_TOKEN,
+        "Content-Type": "application/json"
+    }
+    # URL для отправки запроса
+    url = "https://pay.crypt.bot/api/getInvoices"  # Укажите нужный URL
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.post(url=url) as response:
+            data = await response.json()
+            print('!!!', data)
+            invoices = data['result']['items']
+            for invoice in invoices:
+                if str(invoice['invoice_id']) == order_id:
+                    if invoice['status'] == 'paid':
+                        print("Оплачено")
+                        amount_money = invoice['amount']
+                        # await star_db.buy_star_complete(payload['payload']['invoice_id'])
+                        # рефералам 3%
+                        # отправить уведомление о покупке
+                        # изменить статус заказа в БД
+                        # запрос на fragment
+                        # await db.edit_user_balance(order.user_id, payload['payload']['amount'], 1)
+                        await state.clear()
+                        await callback.answer('')
+                        await callback.message.edit_text('Оплата прошла успешно!',
+                                                         reply_markup=await star_kb.withdrawal_options_kb())
+                    else:
+                        print("Не оплачено")
+                        await callback.answer('Вы не оплатили')

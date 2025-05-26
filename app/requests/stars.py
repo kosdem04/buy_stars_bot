@@ -1,6 +1,7 @@
 from app.database import async_session
 from app.models.users import UserORM
-from app.models.stars import StarWithdrawalOption, StarBuyOption, StarCostORM, BuyStarMethodORM, WithdrawalORM
+from app.models.stars import StarWithdrawalOption, StarBuyOption, StarCostORM, BuyStarMethodORM, WithdrawalORM, \
+    BuyStarsORM
 from app.models.admin import TextInBotORM
 from sqlalchemy import select, update, delete, desc
 import datetime
@@ -74,3 +75,22 @@ async def withdrawal_stars(user_id, new_balance, amount):
         withdrawal_id = withdrawal.id
         await session.commit()
         return withdrawal_id
+
+
+
+async def get_cryptobot_method():
+    async with async_session() as session:
+        method = await session.scalar(select(BuyStarMethodORM).where(BuyStarMethodORM.eng_name == 'crypto_bot'))
+        return method
+
+
+async def add_buy_star(order_id, user_id, method_id, amount):
+    async with async_session() as session:
+        session.add(BuyStarsORM(
+            user_id=user_id,
+            order_id=order_id,
+            method_id=method_id,
+            amount=amount,
+        ))
+        await session.commit()
+        await session.commit()

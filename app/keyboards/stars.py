@@ -75,3 +75,14 @@ async def buy_options_kb():
     kb.add(InlineKeyboardButton(text='Назад', callback_data='back_to_select_user_stars'))
     kb.adjust(2)
     return kb.as_markup()
+
+
+
+async def buy_stars_crypto_bot_kb(pay_url, order_id):
+    kb = InlineKeyboardBuilder()
+    kb.add(InlineKeyboardButton(text="Оплатить",
+                                    url=pay_url))
+    kb.add(InlineKeyboardButton(text='Проверить оплату', callback_data=f'check_buy_stars_crypto_bot#{order_id}'))
+    kb.add(InlineKeyboardButton(text='Отмена', callback_data='back_to_select_user_stars'))
+    kb.adjust(1)
+    return kb.as_markup()
