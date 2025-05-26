@@ -242,7 +242,6 @@ async def buy_stars_select_method_crypto_bot(callback: CallbackQuery, user_info:
 
 @star.callback_query(F.data.startswith('check_buy_stars_crypto_bot#'))
 async def check_buy_stars_crypto_bot(callback: CallbackQuery, state: FSMContext):
-    await callback.answer('')
     order_id = str(callback.data.split('#')[1])
     headers = {
         "Crypto-Pay-API-Token": CRYPTOBOT_TOKEN,
